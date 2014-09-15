@@ -2,54 +2,50 @@
 # Cookbook Name:: sidekiq
 # Recipe:: default
 #
-role = node[:instance_role]
-if role == 'solo' || (role == 'util' && node[:name] =~ /sidekiq/)
 
-  # for now
-  worker_count = 1
+# for now
+worker_count = 1
+app = 'backend'
+env = 'production'
+user = 'root'
+group = 'root'
 
-  node[:applications].each do |app, data|
-    template "/etc/monit.d/sidekiq_#{app}.monitrc" do 
-      owner 'root' 
-      group 'root' 
-      mode 0644 
-      source "monitrc.conf.erb" 
-      variables({ 
-        :num_workers => worker_count,
-        :app_name => app, 
-        :rails_env => node[:environment][:framework_env] 
-      }) 
-    end
+template "/etc/monit.d/sidekiq_#{app}.monitrc" do
+  owner 'root'
+  group 'root'
+  mode 0644
+  source "monitrc.conf.erb"
+  variables(num_workers: worker_count,
+            app_name: app,
+            rails_env: env
+  )
+end
 
-    template "/engineyard/bin/sidekiq" do
-      owner 'root'
-      group 'root' 
-      mode 0755
-      source "sidekiq.erb" 
-    end
+template "/bin/sidekiq" do
+  owner 'root'
+  group 'root'
+  mode 0755
+  source "sidekiq.erb"
+end
 
-    worker_count.times do |count|
-      template "/data/#{app}/shared/config/sidekiq_#{count}.yml" do
-        owner node[:owner_name]
-        group node[:owner_name]
-        mode 0644
-        source "sidekiq.yml.erb"
-        variables({
-          :require => "/data/#{app}/current"
-        })
-      end
-    end
+worker_count.times do |count|
+  template "/usr/local/#{app}/shared/config/sidekiq_#{count}.yml" do
+    owner user
+    group group
+    mode 0644
+    source "sidekiq.yml.erb"
+    variables(require: "/usr/local/#{app}/current")
+  end
+end
 
-    execute "ensure-sidekiq-is-setup-with-monit" do 
-      command %Q{ 
+execute "ensure-sidekiq-is-setup-with-monit" do
+  command %Q{
         monit reload 
-      } 
-    end
+      }
+end
 
-    execute "restart-sidekiq" do 
-      command %Q{ 
+execute "restart-sidekiq" do
+  command %Q{
         echo "sleep 20 && monit -g #{app}_sidekiq restart all" | at now 
       }
-    end
-  end 
 end
