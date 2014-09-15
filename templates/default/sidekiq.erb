@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # This script starts and stops the Sidekiq daemon
-# This script belongs in /engineyard/bin/sidekiq
+# This script belongs in /usr/local/bin/sidekiq
 #
 
 PATH=/bin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:$PATH
@@ -103,7 +103,7 @@ SIG="INT"
 WORKER_REF=`echo $CONF_FILE | sed s/.yml//`
 
 LOCK_FILE="/tmp/$WORKER_REF.monit-lock"
-PID_FILE="/var/run/engineyard/sidekiq/$APP/$WORKER_REF.pid"
+PID_FILE="/var/run/$APP/$WORKER_REF.pid"
 
 # Read other defaults from a file
 if [ -r /etc/default/$WORKER_REF ]; then

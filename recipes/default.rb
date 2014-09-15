@@ -10,7 +10,7 @@ env = 'production'
 user = 'root'
 group = 'root'
 
-template "/etc/monit.d/sidekiq_#{app}.monitrc" do
+template "/etc/monit/conf.d/sidekiq_#{app}.conf" do
   owner 'root'
   group 'root'
   mode 0644
@@ -21,7 +21,7 @@ template "/etc/monit.d/sidekiq_#{app}.monitrc" do
   )
 end
 
-template "/bin/sidekiq" do
+template "/usr/local/bin/sidekiq" do
   owner 'root'
   group 'root'
   mode 0755
